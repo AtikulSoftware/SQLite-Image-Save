@@ -37,11 +37,24 @@
 
     </androidx.cardview.widget.CardView>
 
+
+    <EditText
+        android:id="@+id/ed_imgLink"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/img_card"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/edit_text_bg"
+        android:hint="Image Link"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="12dp" />
+
     <EditText
         android:id="@+id/ed_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/img_card"
+        android:layout_below="@id/ed_imgLink"
         android:layout_marginHorizontal="10dp"
         android:layout_marginTop="10dp"
         android:background="@drawable/edit_text_bg"
@@ -56,7 +69,17 @@
         android:layout_below="@id/ed_name"
         android:layout_marginHorizontal="10dp"
         android:layout_marginTop="10dp"
-        android:text="Insert Data" />
+        android:text="Insert data and image from gallery" />
+
+    <Button
+
+        android:id="@+id/btnInsertFromUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnInsert"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp"
+        android:text="Insert data and image from Url" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabDetails"

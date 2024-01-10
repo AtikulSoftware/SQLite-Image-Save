@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,17 +25,23 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    ImageView img_profile,pickImage;
-    EditText ed_name;
+    ImageView img_profile, pickImage;
+    EditText ed_name, ed_imgLink;
     Button btnInsert;
     Uri imageUri;
     DatabaseHelper databaseHelper;
@@ -48,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         img_profile = findViewById(R.id.img_profile);
         pickImage = findViewById(R.id.pickImage);
         ed_name = findViewById(R.id.ed_name);
+        ed_imgLink = findViewById(R.id.ed_imgLink);
         btnInsert = findViewById(R.id.btnInsert);
 
         // Database Helper কে পরিচয় করিয়ে দেওয়া হয়েছে ।
@@ -55,31 +63,69 @@ public class MainActivity extends AppCompatActivity {
 
         // user থেকে image get করা হয়েছে ।
         pickImage.setOnClickListener(v -> {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                pickImages.launch(intent);
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            pickImages.launch(intent);
         });
 
         // data insert করা হয়েছে ।
         btnInsert.setOnClickListener(v -> {
             String Name = ed_name.getText().toString();
-            if (Name.isEmpty()){
+            if (Name.isEmpty()) {
                 ed_name.setError("Enter Your Name");
                 return;
-            } else if (imageUri == null){
-                Toast.makeText(MainActivity.this,"Please select image", Toast.LENGTH_SHORT).show();
+            } else if (imageUri == null) {
+                Toast.makeText(MainActivity.this, "Please select image", Toast.LENGTH_SHORT).show();
             } else {
-                boolean result =  databaseHelper.insertData(Name, uriToBitmap(imageUri));
-                if (result){
-                    Toast.makeText(MainActivity.this,"Data Insert", Toast.LENGTH_SHORT).show();
+                boolean result = databaseHelper.insertData(Name, uriToBitmap(imageUri));
+                if (result) {
+                    Toast.makeText(MainActivity.this, "Data Insert", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(MainActivity.this,"Data not Insert", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Data not Insert", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+
+        findViewById(R.id.btnInsertFromUrl).setOnClickListener(v -> {
+            // edit text থেকে data get করা হয়েছে ।
+            String Name = ed_name.getText().toString();
+            String edImage = ed_imgLink.getText().toString();
+
+            if (Name.isEmpty()) {
+                ed_name.setError("Enter Name");
+                return;
+            } else if (edImage.isEmpty()) {
+                ed_imgLink.setError("Is Empty");
+                return;
+            } else {
+                Picasso.get().load(edImage).into(new Target() {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                        boolean result = databaseHelper.insertData(Name, bitmap);
+                        if (result) {
+                            Toast.makeText(MainActivity.this, "Data Insert", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Data not Insert", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                        Toast.makeText(MainActivity.this, "Failed, Please insert correct url", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+                        // Optional: handle placeholder image
+                        Toast.makeText(MainActivity.this, "Loading", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 
         // fab button এর onClick লেখা হয়েছে ।
         findViewById(R.id.fabDetails).setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this,UserList.class));
+            startActivity(new Intent(MainActivity.this, UserList.class));
         });
 
     } // onCreate method end here =================================
@@ -91,14 +137,14 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         imageUri = result.getData().getData();
                         img_profile.setImageURI(imageUri);
-                    }catch (Exception e){
-                        Toast.makeText(MainActivity.this,"No Image Selected", Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "No Image Selected", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
     );
 
-    public Bitmap uriToBitmap(Uri uri){
+    public Bitmap uriToBitmap(Uri uri) {
         InputStream inputStream = null;
         try {
             inputStream = getContentResolver().openInputStream(uri);
@@ -107,6 +153,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return BitmapFactory.decodeStream(inputStream);
     }
-
 
 } // public class end here ========================================
